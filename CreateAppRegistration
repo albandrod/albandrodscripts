@@ -1,3 +1,40 @@
+<#
+.SYNOPSIS
+This script creates an Azure AD application registration with specified Microsoft Graph and SharePoint permissions.
+
+.DESCRIPTION
+The script performs the following tasks:
+1. Connects to Azure AD.
+2. Creates a new Azure AD application registration.
+3. Generates a client secret with a specified expiry period.
+4. Adds specified Microsoft Graph and SharePoint permissions to the application.
+5. Outputs the client secret value.
+
+.PARAMETER $appName
+The display name for the new Azure AD application.
+
+.PARAMETER $graphPermissions
+An array of Microsoft Graph permissions to be assigned to the application.
+
+.PARAMETER $spPermissions
+An array of SharePoint permissions to be assigned to the application.
+
+.PARAMETER $secretDescription
+A description for the client secret.
+
+.PARAMETER $secretExpiryYears
+The number of years before the client secret expires.
+
+.EXAMPLE
+# Run the script to create an app registration with the specified parameters
+.\CreateAppRegistration.ps1
+
+.NOTES
+- Ensure you have the AzureAD module installed and imported.
+- You must have the necessary permissions to create app registrations and assign permissions in Azure AD.
+- Store the client secret value securely as it will not be shown again after the script execution.
+
+#>
 # this code is used to demostrate
 # Variables
 $appName = "M365 Governance Essentials"
