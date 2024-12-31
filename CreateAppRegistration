@@ -1,0 +1,79 @@
+# this code is used to demostrate
+# Variables
+$appName = "M365 Governance Essentials"
+$graphPermissions = @("User.Read.All", "Policy.Read.All", "Organization.Read.All", "UserAuthenticationMethod.Read.All", "RoleManagement.Read.Directory", "GroupMember.Read.All", "Directory.Read.All", "Application.Read.All", "Domain.ReadAll", "AuditLog.Read.All","Calendars.Read","Group.Read.All","OnlineMeetings.Read.All","OnlineMeetingArtifact.Read.All","CrossTenantInformation.ReadBasic.All","ReportSettings.ReadWrite.All","Reports.Read.All","ServiceHealth.Read.All","ServiceMessage.Read.All","Mail.Send")
+$spPermissions = @("Sites.FullControl.All")
+$secretDescription = "Governance Essentials Secret"
+$secretExpiryYears = 10
+
+# Connect to Azure AD
+Connect-AzureAD
+
+# Create app registration
+$app = New-AzureADApplication -DisplayName $appName
+$appObjectId = $app.ObjectId
+
+# Create a client secret with 10 years expiry
+$secretStartDate = Get-Date
+$secretEndDate = $secretStartDate.AddYears($secretExpiryYears)
+$secret = New-AzureADApplicationPasswordCredential -ObjectId $appObjectId -StartDate $secretStartDate -EndDate $secretEndDate -CustomKeyIdentifier $secretDescription
+
+# Output the client secret value
+Write-Output "Client Secret Value: $($secret.Value)"
+Write-Output "Store this value securely. It won't be shown again."
+
+# Initialize a list for all required resource access
+$totalRequiredResourceAccess = @()
+
+# Add Microsoft Graph permissions (Application only)
+$graphServicePrincipal = Get-AzureADServicePrincipal -Filter "AppId eq '00000003-0000-0000-c000-000000000000'"
+if ($graphServicePrincipal) {
+    $graphResourceAccess = New-Object -TypeName Microsoft.Open.AzureAD.Model.RequiredResourceAccess
+    $graphResourceAccess.ResourceAppId = $graphServicePrincipal.AppId
+    $graphResourceAccess.ResourceAccess = [System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.ResourceAccess]]::new()
+
+    foreach ($permission in $graphPermissions) {
+        # Search only for application permissions
+        $appRole = $graphServicePrincipal.AppRoles | Where-Object {$_.Value -eq $permission}
+        if ($appRole) {
+            $access = New-Object -TypeName Microsoft.Open.AzureAD.Model.ResourceAccess
+            $access.Id = $appRole.Id
+            $access.Type = "Role"
+            $graphResourceAccess.ResourceAccess.Add($access)
+        }
+    }
+
+    if ($graphResourceAccess.ResourceAccess.Count -gt 0) {
+        $totalRequiredResourceAccess += $graphResourceAccess
+    }
+}
+
+# Add SharePoint permissions (optional)
+$spServicePrincipal = Get-AzureADServicePrincipal -Filter "AppId eq '00000003-0000-0ff1-ce00-000000000000'" # SharePoint App ID
+if ($spServicePrincipal) {
+    $spResourceAccess = New-Object -TypeName Microsoft.Open.AzureAD.Model.RequiredResourceAccess
+    $spResourceAccess.ResourceAppId = $spServicePrincipal.AppId
+    $spResourceAccess.ResourceAccess = [System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.ResourceAccess]]::new()
+
+    foreach ($permission in $spPermissions) {
+        $spPermission = $spServicePrincipal.AppRoles | Where-Object {$_.Value -eq $permission}
+        if ($spPermission) {
+            $access = New-Object -TypeName Microsoft.Open.AzureAD.Model.ResourceAccess
+            $access.Id = $spPermission.Id
+            $access.Type = "Role"
+            $spResourceAccess.ResourceAccess.Add($access)
+        }
+    }
+
+    if ($spResourceAccess.ResourceAccess.Count -gt 0) {
+        $totalRequiredResourceAccess += $spResourceAccess
+    }
+}
+
+# Apply all permissions at once
+if ($totalRequiredResourceAccess.Count -gt 0) {
+    Set-AzureADApplication -ObjectId $appObjectId -RequiredResourceAccess $totalRequiredResourceAccess
+    Write-Output "All application permissions successfully added to the app."
+} else {
+    Write-Output "No application permissions were added to the app."
+}
