@@ -38,7 +38,7 @@ The number of years before the client secret expires.
 # this code is used to demostrate
 # Variables
 $appName = "M365 Governance Essentials"
-$graphPermissions = @("User.Read.All", "Policy.Read.All", "Organization.Read.All", "UserAuthenticationMethod.Read.All", "RoleManagement.Read.Directory", "GroupMember.Read.All", "Directory.Read.All", "Application.Read.All", "Domain.ReadAll", "AuditLog.Read.All","Calendars.Read","Group.Read.All","OnlineMeetings.Read.All","OnlineMeetingArtifact.Read.All","CrossTenantInformation.ReadBasic.All","ReportSettings.Read.All","Reports.Read.All","ServiceHealth.Read.All","ServiceMessage.Read.All","Mail.Send")
+$graphPermissions = @("User.Read.All", "Policy.Read.All", "Organization.Read.All", "UserAuthenticationMethod.Read.All", "RoleManagement.Read.Directory", "GroupMember.Read.All", "Directory.Read.All", "Application.Read.All", "Domain.ReadAll", "AuditLog.Read.All","Calendars.Read","Group.Read.All","OnlineMeetings.Read.All","OnlineMeetingArtifact.Read.All","CrossTenantInformation.ReadBasic.All","ReportSettings.Read.All","Reports.Read.All","ServiceHealth.Read.All","ServiceMessage.Read.All","Mail.Send","DirectoryRecommendations.Read.All","PrivilegedAccess.Read.AzureAD","IdentityRiskEvent.Read.All","RoleEligibilitySchedule.Read.Directory","RoleManagement.Read.All","Policy.Read.ConditionalAccess","SharePointTenantSettings.Read.All")
 $spPermissions = @("Sites.FullControl.All")
 $secretDescription = "Governance Essentials Secret"
 $secretExpiryYears = 1
